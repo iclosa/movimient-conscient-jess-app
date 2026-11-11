@@ -54,7 +54,7 @@ export function PerfilScreen() {
         setRefreshing(false);
       }}
     >
-      <Txt variant="titleMedium" accessibilityRole="header" style={{ paddingVertical: Space.s3 }}>{s('tab_perfil')}</Txt>
+      <View style={{ height: Space.s2 }} />
       <AppCard onPress={() => router.push('/dades')}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: c.violeta, alignItems: 'center', justifyContent: 'center' }}>

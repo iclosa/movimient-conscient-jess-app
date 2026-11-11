@@ -4,6 +4,7 @@ import { useSession } from '@/session';
 /** Datos de solo lectura del backend. Se piden de nuevo al abrir la pantalla o al invalidar. */
 export const useHome = () => { const { repo } = useSession(); return useQuery({ queryKey: ['home'], queryFn: () => repo.home() }); };
 export const useEvents = () => { const { repo } = useSession(); return useQuery({ queryKey: ['events'], queryFn: () => repo.events() }); };
+export const useEventRegistrations = (scope: string) => { const { repo } = useSession(); return useQuery({ queryKey: ['event-registrations', scope], queryFn: () => repo.eventRegistrations(scope) }); };
 export const useSettings = () => { const { repo } = useSession(); return useQuery({ queryKey: ['settings'], queryFn: () => repo.settings(), staleTime: 5 * 60_000 }); };
 export const useActivities = () => { const { repo } = useSession(); return useQuery({ queryKey: ['activities'], queryFn: () => repo.activities() }); };
 export const useSessions = (from: Date, to: Date) => {

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useBookings } from '@/api/hooks';
-import { Booking, isPaymentPending } from '@/api/models';
+import { useBookings, useEventRegistrations } from '@/api/hooks';
+import { AppEvent, Booking, EventRegistration } from '@/api/models';
 import { useStrings, useTheme } from '@/theme';
 import { activityTone, Space, withAlpha } from '@/theme/tokens';
 import { AppCard, Button, EmptyState, ErrorBox, Loading, Pill, RatingStars, Segmented, SubScreen, Txt } from '@/ui';
+import { PaymentPill } from '../payment';
+import { EventSheet, eventTypeKey } from '../resum/EventSheet';
 import { cancelParamsOf, RateSheet, useCancelBooking } from '../reservar/bookingActions';
 
 export function BookingsScreen() {
@@ -15,7 +17,16 @@ export function BookingsScreen() {
   const qc = useQueryClient();
   const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming');
   const bookings = useBookings(scope);
+  const registrations = useEventRegistrations(scope);
   const [rate, setRate] = useState<Booking | null>(null);
+  const [event, setEvent] = useState<AppEvent | null>(null);
+  // Clases y actividades/talleres juntos, ordenados por fecha (próximos: los más cercanos primero).
+  const items: Item[] = [
+    ...(bookings.data ?? []).filter((b) => b.session).map((b): Item => ({ kind: 'class', at: b.session!.startsAt, booking: b })),
+    ...(registrations.data ?? []).filter((r) => r.event).map((r): Item => ({ kind: 'event', at: r.event!.startsAt, registration: r })),
+  ].sort((a, b) => (scope === 'upcoming' ? a.at.getTime() - b.at.getTime() : b.at.getTime() - a.at.getTime()));
+  const pending = bookings.isPending || registrations.isPending;
+  const error = bookings.error ?? registrations.error;
   const [refreshing, setRefreshing] = useState(false);
 
   return (
@@ -24,7 +35,7 @@ export function BookingsScreen() {
       refreshing={refreshing}
       onRefresh={async () => {
         setRefreshing(true);
-        await qc.invalidateQueries({ queryKey: ['bookings'] });
+        await Promise.all([qc.invalidateQueries({ queryKey: ['bookings'] }), qc.invalidateQueries({ queryKey: ['event-registrations'] })]);
         setRefreshing(false);
       }}
     >
@@ -34,11 +45,11 @@ export function BookingsScreen() {
         options={[{ value: 'upcoming', label: s('bookings_upcoming') }, { value: 'past', label: s('bookings_past') }]}
       />
       <View style={{ height: Space.s3 }} />
-      {bookings.isPending ? (
+      {pending ? (
         <Loading />
-      ) : bookings.isError ? (
-        <ErrorBox error={bookings.error} onRetry={() => void bookings.refetch()} />
-      ) : bookings.data.length === 0 ? (
+      ) : error ? (
+        <ErrorBox error={error} onRetry={() => { void bookings.refetch(); void registrations.refetch(); }} />
+      ) : items.length === 0 ? (
         <EmptyState
           icon="calendar-clear-outline"
           title={s(scope === 'upcoming' ? 'bookings_none_upcoming' : 'bookings_none_past')}
@@ -47,13 +58,47 @@ export function BookingsScreen() {
         />
       ) : (
         <View style={{ gap: Space.s3 }}>
-          {bookings.data.map((b) => (
-            <BookingTile key={b.id} booking={b} onRate={() => setRate(b)} />
-          ))}
+          {items.map((i) =>
+            i.kind === 'class' ? (
+              <BookingTile key={`c${i.booking.id}`} booking={i.booking} onRate={() => setRate(i.booking)} />
+            ) : (
+              <EventTile key={`e${i.registration.id}`} registration={i.registration} onOpen={() => setEvent(i.registration.event)} />
+            ),
+          )}
         </View>
       )}
       <RateSheet booking={rate} visible={!!rate} onClose={() => setRate(null)} />
+      <EventSheet event={event} onClose={() => setEvent(null)} />
     </SubScreen>
+  );
+}
+
+type Item =
+  | { kind: 'class'; at: Date; booking: Booking }
+  | { kind: 'event'; at: Date; registration: EventRegistration };
+
+function EventTile({ registration, onOpen }: { registration: EventRegistration; onOpen: () => void }) {
+  const s = useStrings();
+  const c = useTheme();
+  const e = registration.event;
+  if (!e) return null;
+  const cancelled = registration.status === 'cancelled';
+  const label = cancelled ? s('state_cancelled') : s(registration.status === 'waitlist' ? 'event_status_waitlist' : 'event_status_confirmed');
+  return (
+    <AppCard onPress={onOpen}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: Space.s2 }}>
+        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: c.violeta }} />
+        <Txt variant="titleSmall" style={{ flex: 1 }}>{e.title}</Txt>
+        <Pill
+          label={label}
+          background={cancelled ? c.surface300 : withAlpha(c.ok, 0.14)}
+          foreground={cancelled ? c.inkMuted : c.ok}
+        />
+      </View>
+      <Txt variant="small" muted style={{ marginTop: 2 }}>{s(eventTypeKey(e.type))}</Txt>
+      <Txt variant="body" style={{ marginTop: Space.s1 }}>{`${s.dateLong(e.startsAt)} · ${e.endsAt ? s.timeRange(e.startsAt, e.endsAt) : s.time(e.startsAt)}`}</Txt>
+      {registration.paymentStatus ? <View style={{ marginTop: Space.s2 }}><PaymentPill info={registration} /></View> : null}
+    </AppCard>
   );
 }
 
@@ -75,9 +120,9 @@ function BookingTile({ booking, onRate }: { booking: Booking; onRate: () => void
           background={cancelled ? c.surface300 : withAlpha(c.ok, 0.14)}
           foreground={cancelled ? c.inkMuted : c.ok}
         />
-        {isPaymentPending(booking) ? <Pill label={s('state_payment_pending')} background={withAlpha(c.warning, 0.18)} foreground={c.isDark ? c.warning : c.ink} icon="time-outline" /> : null}
       </View>
       <Txt variant="body" style={{ marginTop: Space.s1 }}>{`${s.dateLong(session.startsAt)} · ${s.timeRange(session.startsAt, session.endsAt)}`}</Txt>
+      {booking.paymentStatus && (!cancelled || booking.paymentStatus === 'refund_pending' || booking.paymentStatus === 'refunded') ? <View style={{ marginTop: Space.s2 }}><PaymentPill info={booking} /></View> : null}
       {booking.attendee.type === 'child' ? <Txt variant="small">{s('for_child', { name: booking.attendee.name })}</Txt> : null}
       {cancelled && booking.lateCancellation ? <Txt variant="small" style={{ marginTop: Space.s1 }}>{s('late_cancelled_note')}</Txt> : null}
       {booking.rating != null ? (

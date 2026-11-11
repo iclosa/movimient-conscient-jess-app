@@ -97,3 +97,39 @@ describe('modelos', () => {
     expect(hasActiveBooking({ myBookings: [] }, null)).toBe(false);
   });
 });
+
+import { parseBooking as pb, parseEvent as pe, parseEventRegistration } from '../src/api/models';
+import { paymentText } from '../src/features/payment';
+import { createStrings } from '../src/i18n';
+
+describe('cobro en reservas e inscripciones', () => {
+  const s = createStrings('ca');
+  test('la reserva lleva estado, importe y método', () => {
+    const b = pb({ id: 1, status: 'booked', payment_status: 'pending', payment_amount_cents: 1200, payment_method: 'cash' });
+    expect(b.paymentAmountCents).toBe(1200);
+    expect(paymentText(s, b)).toBe(`${s('state_payment_pending')} · ${s.money(1200)} · ${s('pay_method_cash')}`);
+  });
+  test('un cobro de 0 € por bono no muestra importe', () => {
+    expect(paymentText(s, { paymentStatus: 'paid', paymentAmountCents: 0, paymentMethod: 'pass' })).toBe(`${s('pay_paid')} · ${s('pay_method_pass')}`);
+  });
+  test('pendiente de devolución', () => {
+    expect(paymentText(s, { paymentStatus: 'refund_pending', paymentAmountCents: 1500, paymentMethod: 'cash' })).toContain(s('pay_refund_pending'));
+  });
+  test('sin cobro no hay texto', () => {
+    expect(paymentText(s, { paymentStatus: '' })).toBeNull();
+  });
+  test('inscripción con evento y cobro', () => {
+    const r = parseEventRegistration({
+      id: 5, status: 'confirmed', payment_status: 'pending', payment_amount_cents: 3000, payment_method: 'cash', can_cancel: true,
+      event: { id: 9, title: 'Taller', type: 'taller', starts_at: '2026-12-01T10:00:00+01:00' },
+    });
+    expect(r.event?.title).toBe('Taller');
+    expect(r.paymentStatus).toBe('pending');
+    expect(r.canCancel).toBe(true);
+  });
+  test('el evento trae su propio cobro', () => {
+    const e = pe({ id: 1, title: 'x', starts_at: '2026-12-01T10:00:00+01:00', my_registration: 'confirmed', my_payment_status: 'paid', my_payment_amount_cents: 500, my_payment_method: 'bizum' });
+    expect(e.paymentStatus).toBe('paid');
+    expect(e.paymentAmountCents).toBe(500);
+  });
+});

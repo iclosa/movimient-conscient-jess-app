@@ -41,7 +41,7 @@ export function VideosScreen() {
         setRefreshing(false);
       }}
     >
-      <Txt variant="titleMedium" accessibilityRole="header" style={{ paddingVertical: Space.s3 }}>{s('tab_videos')}</Txt>
+      <View style={{ height: Space.s2 }} />
       {videos.isPending ? (
         <Loading />
       ) : videos.isError ? (

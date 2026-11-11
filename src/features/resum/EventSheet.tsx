@@ -6,6 +6,7 @@ import { useEvents } from '@/api/hooks';
 import { AppEvent } from '@/api/models';
 import { useSession } from '@/session';
 import { useStrings, useTheme } from '@/theme';
+import { PaymentPill } from '../payment';
 import { Space, withAlpha } from '@/theme/tokens';
 import { Button, Pill, Sheet, Txt, errorText, useFeedback, IconName } from '@/ui';
 
@@ -54,6 +55,7 @@ export function EventSheet({ event, onClose }: { event: AppEvent | null; onClose
         toast(s('event_cancelled'));
       }
       void qc.invalidateQueries({ queryKey: ['events'] });
+      void qc.invalidateQueries({ queryKey: ['event-registrations'] });
       void qc.invalidateQueries({ queryKey: ['home'] });
     } catch (err) {
       toast(errorText(err, s));
@@ -89,6 +91,7 @@ export function EventSheet({ event, onClose }: { event: AppEvent | null; onClose
               />
             </View>
           ) : null}
+          {e.myRegistration && e.paymentStatus ? <View style={{ marginBottom: Space.s3 }}><PaymentPill info={e} /></View> : null}
           {e.myRegistration ? (
             <Button variant="outlined" label={s('event_cancel_action')} onPress={() => toggle(e)} disabled={busy} />
           ) : (

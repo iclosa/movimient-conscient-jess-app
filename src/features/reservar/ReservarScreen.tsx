@@ -103,8 +103,7 @@ export function ReservarScreen() {
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: c.surface100 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: Space.s4, paddingVertical: Space.s3 }}>
-        <Txt variant="titleMedium" accessibilityRole="header" style={{ flex: 1 }}>{s('tab_reservar')}</Txt>
-        <View style={{ width: 200 }}>
+        <View style={{ flex: 1 }}>
           <Segmented
             value={mode}
             onChange={(m) => {

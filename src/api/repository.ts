@@ -84,6 +84,7 @@ export class Repository {
   async settings() { return M.parseSettings(obj(await this.api.get('settings'))); }
   async promotions() { return rows(await this.api.get('promotions')).map(M.parsePromotion); }
   async events() { return rows(await this.api.get('events')).map(M.parseEvent); }
+  async eventRegistrations(scope: string) { return rows(await this.api.get('event-registrations', { scope })).map(M.parseEventRegistration); }
   async registerForEvent(id: number): Promise<string> { return obj(await this.api.post(`events/${id}/registration`)).status ?? 'confirmed'; }
   cancelEventRegistration(id: number) { return this.api.delete(`events/${id}/registration`); }
   async announcements() { return rows(await this.api.get('announcements')).map(M.parseAnnouncement); }

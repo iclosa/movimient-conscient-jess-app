@@ -24,7 +24,7 @@ export function MesScreen() {
         setRefreshing(false);
       }}
     >
-      <Txt variant="titleMedium" accessibilityRole="header" style={{ paddingVertical: Space.s3 }}>{s('tab_mes')}</Txt>
+      <View style={{ height: Space.s2 }} />
       {items.isPending ? (
         <Loading />
       ) : items.isError ? (

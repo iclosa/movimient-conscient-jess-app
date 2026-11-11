@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMyPasses, useSessions, useSettings } from '@/api/hooks';
 import { ApiError } from '@/api/client';
+import { PaymentPill } from '../payment';
 import { ClassSession, MyBookingRef, firstName, isPaymentPending, hasActiveBooking } from '@/api/models';
 import { useSession } from '@/session';
 import { useStrings, useTheme } from '@/theme';
@@ -117,11 +118,12 @@ export function SessionSheet({ session: initial, onClose }: { session: ClassSess
               <View key={b.id} style={{ flexDirection: 'row', alignItems: 'center', marginTop: Space.s2, gap: Space.s2 }}>
                 <View style={{ flex: 1 }}>
                   <Pill
-                    label={`${attendeeName(b)} · ${s(b.status === 'waitlist' ? 'state_waitlist' : isPaymentPending(b) ? 'state_payment_pending' : 'state_booked')}`}
+                    label={`${attendeeName(b)} · ${s(b.status === 'waitlist' ? 'state_waitlist' : 'state_booked')}`}
                     background={withAlpha(c.ok, 0.14)}
                     foreground={c.ok}
                     icon="checkmark-circle-outline"
                   />
+                  {b.paymentStatus ? <View style={{ marginTop: Space.s1 }}><PaymentPill info={b} /></View> : null}
                 </View>
                 <Button
                   variant="text"

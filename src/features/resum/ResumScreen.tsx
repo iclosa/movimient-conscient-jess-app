@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useAnnouncements, useBookings, useEvents, useHome, useSessions } from '@/api/hooks';
+import { paymentText } from '../payment';
 import { AppEvent, Booking, ClassSession, firstName, isPaymentPending, HomeData, Promotion, Streak, UserPass } from '@/api/models';
 import { useSession } from '@/session';
 import { useStrings, useTheme } from '@/theme';
@@ -95,11 +96,11 @@ function HomeContent({ data }: { data: HomeData }) {
   const events = useEvents();
   const bookings = useBookings('upcoming');
   const [session, setSession] = useState<ClassSession | null>(null);
-  // «Properament»: las siguientes clases de la persona (tras la próxima) y los eventos, por fecha.
+  // «Properament»: todas las clases reservadas de la persona y los eventos, por fecha.
   const upcoming: Upcoming[] = [
     ...(events.data ?? data.upcomingEvents).map((e): Upcoming => ({ kind: 'event', at: e.startsAt, event: e })),
     ...(bookings.data ?? [])
-      .filter((b) => b.session && b.id !== data.nextBooking?.id && (b.status === 'booked' || b.status === 'waitlist'))
+      .filter((b) => b.session && (b.status === 'booked' || b.status === 'waitlist'))
       .map((b): Upcoming => ({ kind: 'class', at: b.session!.startsAt, booking: b })),
   ].sort((a, b) => a.at.getTime() - b.at.getTime());
   // Próximas clases con plaza, para reservar rápido (las que ya tienes reservadas no salen).
@@ -231,7 +232,7 @@ function NextClassCard({ booking: b }: { booking: Booking }) {
       {session.instructor ? <OnRow icon="person-outline" color={on} text={session.instructor.name} /> : null}
       {session.room ? <OnRow icon="location-outline" color={on} text={session.room} /> : null}
       {b.attendee.type === 'child' ? <OnRow icon="happy-outline" color={on} text={s('for_child', { name: b.attendee.name })} /> : null}
-      {isPaymentPending(b) ? <OnRow icon="wallet-outline" color={on} text={s('state_payment_pending')} /> : null}
+      {paymentText(s, b) ? <OnRow icon="wallet-outline" color={on} text={paymentText(s, b)!} /> : null}
       {b.canCancel ? (
         <View>
           <Txt variant="small" color={on} style={{ marginTop: Space.s2, opacity: 0.9 }}>
