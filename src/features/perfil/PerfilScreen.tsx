@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useAnnouncements, useBookings, useMyPasses, usePromotions, useStreak } from '@/api/hooks';
+import { useUnreadAnnouncements, useBookings, useMyPasses, usePromotions, useStreak } from '@/api/hooks';
 import { useSession } from '@/session';
 import { usePrefs, useStrings, useTheme } from '@/theme';
 import { fonts, Space } from '@/theme/tokens';
@@ -27,7 +27,7 @@ export function PerfilScreen() {
   const streak = useStreak();
   const upcomingBookings = useBookings('upcoming').data?.length ?? 0;
   const activePasses = useMyPasses().data?.filter((p) => p.usable).length ?? 0;
-  const notices = useAnnouncements().data?.length ?? 0;
+  const notices = useUnreadAnnouncements();
   const promos = usePromotions().data?.length ?? 0;
   const { confirm } = useFeedback();
   const [refreshing, setRefreshing] = useState(false);

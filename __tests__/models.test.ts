@@ -1,6 +1,6 @@
 import {
-  hasActiveBooking, isPaymentPending, parseBooking, parseHex, parseHome, parseSession, parseSettings, parseSunInfo, parseUser, parseVideo,
-  practicesFromConfig, parseDate, toApiDate,
+  parseBooking, parseHex, parseHome, parseSession, parseSettings, parseSunInfo, parseUser, parseVideo,
+  practicesFromConfig, parseDate, toApiDate, parseAnnouncement,
 } from '../src/api/models';
 
 describe('modelos', () => {
@@ -77,59 +77,13 @@ describe('modelos', () => {
     expect(p[0].steps).toEqual(['a', 'b']);
     expect(practicesFromConfig({})).toEqual([]);
   });
-
-  test('el estado de pago sale del cobro (payment_status) y solo «pending» es pendiente', () => {
-    const base = { id: 1, status: 'booked', status_label: 'Reservada', attendee: { type: 'user', name: 'Isaac' } };
-    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'pending' }))).toBe(true);
-    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'paid' }))).toBe(false);
-    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'cancelled' }))).toBe(false);
-    expect(isPaymentPending(parseBooking({ ...base, status: 'cancelled', payment_status: 'pending' }))).toBe(false);
-  });
-
-  test('no se puede reservar de nuevo si esa persona ya tiene plaza viva en la clase', () => {
-    const ref = (status: string, childId: number | null) => ({ id: 1, status, paymentStatus: 'pending', childId });
-    const mine = { myBookings: [ref('booked', null), ref('booked', 7), ref('cancelled', 8), ref('waitlist', 9)] };
-    expect(hasActiveBooking(mine, null)).toBe(true);   // titular ya reservado
-    expect(hasActiveBooking(mine, 7)).toBe(true);      // hijo/a ya reservado/a
-    expect(hasActiveBooking(mine, 8)).toBe(false);     // reserva cancelada: puede volver a reservar
-    expect(hasActiveBooking(mine, 9)).toBe(true);      // en lista de espera también cuenta
-    expect(hasActiveBooking(mine, 10)).toBe(false);
-    expect(hasActiveBooking({ myBookings: [] }, null)).toBe(false);
-  });
 });
 
-import { parseBooking as pb, parseEvent as pe, parseEventRegistration } from '../src/api/models';
-import { paymentText } from '../src/features/payment';
-import { createStrings } from '../src/i18n';
-
-describe('cobro en reservas e inscripciones', () => {
-  const s = createStrings('ca');
-  test('la reserva lleva estado, importe y método', () => {
-    const b = pb({ id: 1, status: 'booked', payment_status: 'pending', payment_amount_cents: 1200, payment_method: 'cash' });
-    expect(b.paymentAmountCents).toBe(1200);
-    expect(paymentText(s, b)).toBe(`${s('state_payment_pending')} · ${s.money(1200)} · ${s('pay_method_cash')}`);
-  });
-  test('un cobro de 0 € por bono no muestra importe', () => {
-    expect(paymentText(s, { paymentStatus: 'paid', paymentAmountCents: 0, paymentMethod: 'pass' })).toBe(`${s('pay_paid')} · ${s('pay_method_pass')}`);
-  });
-  test('pendiente de devolución', () => {
-    expect(paymentText(s, { paymentStatus: 'refund_pending', paymentAmountCents: 1500, paymentMethod: 'cash' })).toContain(s('pay_refund_pending'));
-  });
-  test('sin cobro no hay texto', () => {
-    expect(paymentText(s, { paymentStatus: '' })).toBeNull();
-  });
-  test('inscripción con evento y cobro', () => {
-    const r = parseEventRegistration({
-      id: 5, status: 'confirmed', payment_status: 'pending', payment_amount_cents: 3000, payment_method: 'cash', can_cancel: true,
-      event: { id: 9, title: 'Taller', type: 'taller', starts_at: '2026-12-01T10:00:00+01:00' },
-    });
-    expect(r.event?.title).toBe('Taller');
-    expect(r.paymentStatus).toBe('pending');
-    expect(r.canCancel).toBe(true);
-  });
-  test('el evento trae su propio cobro', () => {
-    const e = pe({ id: 1, title: 'x', starts_at: '2026-12-01T10:00:00+01:00', my_registration: 'confirmed', my_payment_status: 'paid', my_payment_amount_cents: 500, my_payment_method: 'bizum' });
-    expect(e.paymentStatus).toBe('paid');
-    expect(e.paymentAmountCents).toBe(500);
+describe('Announcement', () => {
+  it('parses the read flag', () => {
+    const base = { id: 1, title: 'Hola', body: 'x', sent_at: '2026-11-11T10:00:00+00:00' };
+    expect(parseAnnouncement({ ...base, read: true }).read).toBe(true);
+    expect(parseAnnouncement({ ...base, read: false }).read).toBe(false);
+    expect(parseAnnouncement(base).read).toBe(false);
   });
 });

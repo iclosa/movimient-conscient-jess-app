@@ -61,19 +61,8 @@ export const parseActivity = (j: J): Activity => ({
 export interface Instructor { id: number; name: string; photoUrl: string | null }
 export const parseInstructor = (j: J): Instructor => ({ id: j.id, name: j.name, photoUrl: str(j.photo_url) });
 
-/** Cobro asociado a una reserva o inscripción: es el único estado de pago que se muestra. */
-export interface PaymentInfo { paymentStatus: string; paymentAmountCents: number | null; paymentMethod: string | null }
-export const parsePaymentInfo = (j: J, prefix = ''): PaymentInfo => ({
-  paymentStatus: j[`${prefix}payment_status`] ?? '',
-  paymentAmountCents: int(j[`${prefix}payment_amount_cents`]),
-  paymentMethod: str(j[`${prefix}payment_method`]),
-});
-
-export interface MyBookingRef extends Partial<PaymentInfo> { id: number; status: string; paymentStatus: string; childId: number | null }
-/** Reserva viva (no cancelada ni ya hecha) de esa persona en la clase: `childId` null es la persona titular. */
-export const hasActiveBooking = (s: { myBookings: MyBookingRef[] }, childId: number | null) =>
-  s.myBookings.some((b) => b.childId === childId && b.status !== 'cancelled' && b.status !== 'attended');
-export const parseBookingRef = (j: J): MyBookingRef => ({ id: j.id, status: j.status, ...parsePaymentInfo(j), childId: int(j.child_id) });
+export interface MyBookingRef { id: number; status: string; paymentMode: string; childId: number | null }
+export const parseBookingRef = (j: J): MyBookingRef => ({ id: j.id, status: j.status, paymentMode: j.payment_mode ?? '', childId: int(j.child_id) });
 
 /** state: available | full | booked | waitlist | cancelled */
 export interface ClassSession {
@@ -94,15 +83,15 @@ export interface Attendee { type: string; childId: number | null; name: string }
 export const parseAttendee = (j: J): Attendee => ({ type: j.type, childId: int(j.child_id), name: j.name ?? '' });
 export const isChildAttendee = (a: Attendee) => a.type === 'child';
 
-export interface Booking extends PaymentInfo {
-  id: number; status: string; statusLabel: string; attendee: Attendee; canCancel: boolean;
+export interface Booking {
+  id: number; status: string; statusLabel: string; paymentMode: string; attendee: Attendee; canCancel: boolean;
   freeCancellationUntil: Date | null; isFreeCancellation: boolean; lateCancellation: boolean;
   canRate: boolean; rating: number | null; ratingComment: string | null; session: ClassSession | null;
 }
 /** Reserva confirmada pero sin cobrar (sin bono): se paga en la clase o con un bono. */
-export const isPaymentPending = (b: { status: string; paymentStatus: string }) => b.status === 'booked' && b.paymentStatus === 'pending';
+export const isPaymentPending = (b: { status: string; paymentMode: string }) => b.status === 'booked' && b.paymentMode === 'pending';
 export const parseBooking = (j: J): Booking => ({
-  id: j.id, status: j.status, statusLabel: j.status_label ?? j.status, ...parsePaymentInfo(j),
+  id: j.id, status: j.status, statusLabel: j.status_label ?? j.status, paymentMode: j.payment_mode ?? '',
   attendee: parseAttendee(j.attendee ?? {}), canCancel: j.can_cancel === true,
   freeCancellationUntil: dtn(j.free_cancellation_until), isFreeCancellation: j.is_free_cancellation === true,
   lateCancellation: j.late_cancellation === true, canRate: j.can_rate === true, rating: int(j.rating),
@@ -139,7 +128,7 @@ export const parsePromotion = (j: J): Promotion => ({
   imageUrl: str(j.image_url), ctaLabel: str(j.cta_label), ctaUrl: str(j.cta_url), endsAt: dtn(j.ends_at),
 });
 
-export interface AppEvent extends Partial<PaymentInfo> {
+export interface AppEvent {
   id: number; title: string; type: string; description: string | null; location: string | null;
   startsAt: Date; endsAt: Date | null; capacity: number | null; spotsLeft: number | null;
   priceCents: number | null; priceLabel: string | null; imageUrl: string | null;
@@ -151,16 +140,6 @@ export const parseEvent = (j: J): AppEvent => ({
   startsAt: parseDateTime(j.starts_at), endsAt: dtn(j.ends_at), capacity: int(j.capacity),
   spotsLeft: int(j.spots_left), priceCents: int(j.price_cents), priceLabel: str(j.price_label),
   imageUrl: str(j.image_url), myRegistration: str(j.my_registration),
-  ...(j.my_payment_status ? parsePaymentInfo(j, 'my_') : {}),
-});
-
-/** Inscripción propia a un taller, retiro o evento, con su cobro. */
-export interface EventRegistration extends PaymentInfo {
-  id: number; status: string; canCancel: boolean; event: AppEvent | null;
-}
-export const parseEventRegistration = (j: J): EventRegistration => ({
-  id: j.id, status: j.status, ...parsePaymentInfo(j), canCancel: j.can_cancel === true,
-  event: isObj(j.event) ? parseEvent(j.event) : null,
 });
 
 export interface VideoPlayback { provider: string; ref: string }
@@ -219,8 +198,8 @@ export const parseSunInfo = (j: J): SunInfo => ({ location: j.location ?? '', da
 export interface GratitudeEntry { id: number; entryDate: Date; body: string }
 export const parseGratitude = (j: J): GratitudeEntry => ({ id: j.id, entryDate: parseDate(j.entry_date), body: j.body });
 
-export interface Announcement { id: number; title: string; body: string | null; sentAt: Date | null }
-export const parseAnnouncement = (j: J): Announcement => ({ id: j.id, title: j.title, body: str(j.body), sentAt: dtn(j.sent_at) });
+export interface Announcement { id: number; title: string; body: string | null; sentAt: Date | null; read: boolean }
+export const parseAnnouncement = (j: J): Announcement => ({ id: j.id, title: j.title, body: str(j.body), sentAt: dtn(j.sent_at), read: j.read === true });
 
 export interface Streak { weeks: number; classesThisWeek: number; totalClasses: number }
 export const parseStreak = (j: J): Streak => ({

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Switch } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useAnnouncements, useSettings } from '@/api/hooks';
+import { useAnnouncementReads, useAnnouncements, useSettings } from '@/api/hooks';
 import { Child, toApiDate } from '@/api/models';
 import { useSession } from '@/session';
 import { useStrings, useTheme } from '@/theme';
@@ -213,11 +213,15 @@ function ChildSheet({
 export function AnnouncementsScreen() {
   const s = useStrings();
   const qc = useQueryClient();
+  const c = useTheme();
   const list = useAnnouncements();
+  const { markRead, markAllRead } = useAnnouncementReads();
+  const unread = (list.data ?? []).filter((a) => !a.read).length;
   const [refreshing, setRefreshing] = useState(false);
   return (
     <SubScreen
       title={s('announcements_title')}
+      right={unread > 0 ? <Button variant="text" compact label={s('announcements_mark_all')} onPress={markAllRead} /> : undefined}
       fallback="/resum"
       refreshing={refreshing}
       onRefresh={async () => {
@@ -235,10 +239,21 @@ export function AnnouncementsScreen() {
       ) : (
         <View style={{ gap: Space.s3 }}>
           {list.data.map((a) => (
-            <AppCard key={a.id}>
-              {a.sentAt ? <Txt variant="caption">{s.dateMedium(a.sentAt)}</Txt> : null}
+            <AppCard
+              key={a.id}
+              onPress={a.read ? undefined : () => markRead(a.id)}
+              accessibilityLabel={a.read ? undefined : `${a.title}. ${s('announcements_mark_read')}`}
+              style={a.read ? { opacity: 0.75 } : { borderWidth: 1.5, borderColor: withAlpha(c.violeta, 0.45) }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Space.s2 }}>
+                {!a.read ? <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: c.violeta }} /> : null}
+                {a.sentAt ? <Txt variant="caption">{s.dateMedium(a.sentAt)}</Txt> : null}
+              </View>
               <Txt variant="titleMedium">{a.title}</Txt>
               {a.body ? <Txt variant="body" style={{ marginTop: Space.s1 }}>{a.body}</Txt> : null}
+              {!a.read ? (
+                <Txt variant="caption" style={{ marginTop: Space.s2, color: c.violeta }}>{s('announcements_mark_read')}</Txt>
+              ) : null}
             </AppCard>
           ))}
         </View>
