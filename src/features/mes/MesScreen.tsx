@@ -33,7 +33,6 @@ export function MesScreen() {
         <EmptyState icon="flower-outline" title={s('wellness_empty')} />
       ) : (
         <View>
-          <Txt variant="bodyLarge" style={{ marginBottom: Space.s4 }}>{s('mes_intro')}</Txt>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Space.s3 }}>
             {items.data.map((item) => (
               <ToolTile key={item.id} item={item} />
