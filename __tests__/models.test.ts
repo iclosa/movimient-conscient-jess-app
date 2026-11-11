@@ -1,5 +1,5 @@
 import {
-  parseBooking, parseHex, parseHome, parseSession, parseSettings, parseSunInfo, parseUser, parseVideo,
+  hasActiveBooking, isPaymentPending, parseBooking, parseHex, parseHome, parseSession, parseSettings, parseSunInfo, parseUser, parseVideo,
   practicesFromConfig, parseDate, toApiDate,
 } from '../src/api/models';
 
@@ -76,5 +76,24 @@ describe('modelos', () => {
     expect(p).toHaveLength(1);
     expect(p[0].steps).toEqual(['a', 'b']);
     expect(practicesFromConfig({})).toEqual([]);
+  });
+
+  test('el estado de pago sale del cobro (payment_status) y solo «pending» es pendiente', () => {
+    const base = { id: 1, status: 'booked', status_label: 'Reservada', attendee: { type: 'user', name: 'Isaac' } };
+    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'pending' }))).toBe(true);
+    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'paid' }))).toBe(false);
+    expect(isPaymentPending(parseBooking({ ...base, payment_status: 'cancelled' }))).toBe(false);
+    expect(isPaymentPending(parseBooking({ ...base, status: 'cancelled', payment_status: 'pending' }))).toBe(false);
+  });
+
+  test('no se puede reservar de nuevo si esa persona ya tiene plaza viva en la clase', () => {
+    const ref = (status: string, childId: number | null) => ({ id: 1, status, paymentStatus: 'pending', childId });
+    const mine = { myBookings: [ref('booked', null), ref('booked', 7), ref('cancelled', 8), ref('waitlist', 9)] };
+    expect(hasActiveBooking(mine, null)).toBe(true);   // titular ya reservado
+    expect(hasActiveBooking(mine, 7)).toBe(true);      // hijo/a ya reservado/a
+    expect(hasActiveBooking(mine, 8)).toBe(false);     // reserva cancelada: puede volver a reservar
+    expect(hasActiveBooking(mine, 9)).toBe(true);      // en lista de espera también cuenta
+    expect(hasActiveBooking(mine, 10)).toBe(false);
+    expect(hasActiveBooking({ myBookings: [] }, null)).toBe(false);
   });
 });

@@ -40,12 +40,8 @@ export interface ApiClientOptions {
 export class ApiClient {
   private base: string;
   constructor(private opts: ApiClientOptions) {
-<<<<<<< HEAD
-    this.base = `${(opts.baseUrl ?? API_BASE_URL).replace(/\/+$/, '')}/api/v1`;
-=======
     const baseUrl = (opts.baseUrl ?? API_BASE_URL).replace(/\/+$/, '');
     this.base = /\/api\/v1(?:\/public)?$/.test(baseUrl) ? baseUrl : `${baseUrl}/api/v1`;
->>>>>>> 421b520 (Initial commit)
   }
 
   get = (path: string, query?: Query) => this.send('GET', path, undefined, query);

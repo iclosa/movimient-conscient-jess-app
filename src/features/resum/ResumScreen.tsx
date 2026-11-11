@@ -3,17 +3,6 @@ import { Linking, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
-import { useEvents, useHome } from '@/api/hooks';
-import { AppEvent, Booking, firstName, isPaymentPending, HomeData, Promotion, Streak, UserPass } from '@/api/models';
-import { useSession } from '@/session';
-import { useStrings, useTheme } from '@/theme';
-import { activityTone, fonts, Radii, Space, withAlpha, cardShadow, hexToRgb } from '@/theme/tokens';
-import {
-  AppCard, Button, EmptyState, ErrorBox, HScroll, Loading, LogoMark, Pill, RatingStars, Screen, SectionHeader, Txt, IconName,
-} from '@/ui';
-import { useCancelBooking, cancelParamsOf, RateSheet } from '../reservar/bookingActions';
-=======
 import { useAnnouncements, useBookings, useEvents, useHome, useSessions } from '@/api/hooks';
 import { AppEvent, Booking, ClassSession, firstName, isPaymentPending, HomeData, Promotion, Streak, UserPass } from '@/api/models';
 import { useSession } from '@/session';
@@ -24,7 +13,6 @@ import {
 } from '@/ui';
 import { useCancelBooking, cancelParamsOf, RateSheet, useQuickBook } from '../reservar/bookingActions';
 import { SessionSheet } from '../reservar/SessionSheet';
->>>>>>> 421b520 (Initial commit)
 import { EventSheet, eventTypeKey } from './EventSheet';
 
 export const promoTypeKey = (type: string) =>
@@ -48,11 +36,7 @@ export function ResumScreen() {
 
   const refresh = async () => {
     setRefreshing(true);
-<<<<<<< HEAD
-    await Promise.all([qc.invalidateQueries({ queryKey: ['home'] }), qc.invalidateQueries({ queryKey: ['events'] })]);
-=======
     await Promise.all([qc.invalidateQueries({ queryKey: ['home'] }), qc.invalidateQueries({ queryKey: ['events'] }), qc.invalidateQueries({ queryKey: ['bookings'] }), qc.invalidateQueries({ queryKey: ['sessions'] })]);
->>>>>>> 421b520 (Initial commit)
     setRefreshing(false);
   };
 
@@ -75,10 +59,7 @@ function Header({ name, welcome }: { name?: string; welcome?: string }) {
   const s = useStrings();
   const c = useTheme();
   const router = useRouter();
-<<<<<<< HEAD
-=======
   const count = useAnnouncements().data?.length ?? 0;
->>>>>>> 421b520 (Initial commit)
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: Space.s2 }}>
       <LogoMark size={48} />
@@ -89,12 +70,6 @@ function Header({ name, welcome }: { name?: string; welcome?: string }) {
       <Pressable
         onPress={() => router.push('/avisos')}
         accessibilityRole="button"
-<<<<<<< HEAD
-        accessibilityLabel={s('announcements_title')}
-        style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Ionicons name="notifications-outline" size={24} color={c.ink} />
-=======
         accessibilityLabel={count > 0 ? `${s('announcements_title')}: ${count}` : s('announcements_title')}
         style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}
       >
@@ -109,7 +84,6 @@ function Header({ name, welcome }: { name?: string; welcome?: string }) {
             <Txt color="#FFFFFF" style={{ fontFamily: fonts.sansBold, fontSize: 11, lineHeight: 14, includeFontPadding: false }}>{count > 99 ? '99+' : String(count)}</Txt>
           </View>
         ) : null}
->>>>>>> 421b520 (Initial commit)
       </Pressable>
     </View>
   );
@@ -119,9 +93,6 @@ function HomeContent({ data }: { data: HomeData }) {
   const s = useStrings();
   const router = useRouter();
   const events = useEvents();
-<<<<<<< HEAD
-  const upcoming = events.data ?? data.upcomingEvents;
-=======
   const bookings = useBookings('upcoming');
   const [session, setSession] = useState<ClassSession | null>(null);
   // «Properament»: las siguientes clases de la persona (tras la próxima) y los eventos, por fecha.
@@ -139,7 +110,6 @@ function HomeContent({ data }: { data: HomeData }) {
   const quick = (nextSessions.data ?? [])
     .filter((x) => !x.isPast && x.startsAt > now && x.myBookings.length === 0 && !['booked', 'waitlist', 'cancelled', 'full'].includes(x.state))
     .slice(0, 3);
->>>>>>> 421b520 (Initial commit)
   const [event, setEvent] = useState<AppEvent | null>(null);
   const [rate, setRate] = useState<{ booking: Booking; initial: number } | null>(null);
 
@@ -148,36 +118,12 @@ function HomeContent({ data }: { data: HomeData }) {
       {data.streak.totalClasses > 0 ? <View style={{ marginTop: Space.s3 }}><StreakBanner streak={data.streak} /></View> : null}
       <SectionHeader title={s('next_class')} />
       {data.nextBooking ? <NextClassCard booking={data.nextBooking} /> : <NoNextClass />}
-<<<<<<< HEAD
-      <SectionHeader title={s('your_passes')} actionLabel={s('see_passes')} onAction={() => router.push('/bons')} />
-      <PassesRow passes={data.passes} />
-      {data.promotions.length > 0 ? (
-        <>
-          <SectionHeader title={s('promotions')} />
-          <PromotionsRow promotions={data.promotions} />
-        </>
-      ) : null}
-      {upcoming.length > 0 ? (
-        <>
-          <SectionHeader title={s('coming_soon')} />
-          <View style={{ gap: Space.s3 }}>
-            {upcoming.slice(0, 3).map((e) => (
-              <EventTile key={e.id} event={e} onPress={() => setEvent(e)} />
-            ))}
-          </View>
-        </>
-      ) : null}
-=======
->>>>>>> 421b520 (Initial commit)
       {data.bookingToRate ? (
         <>
           <SectionHeader title={s('previous_booking')} />
           <RateCard booking={data.bookingToRate} onRate={(v) => setRate({ booking: data.bookingToRate!, initial: v })} />
         </>
       ) : null}
-<<<<<<< HEAD
-      <EventSheet event={event} onClose={() => setEvent(null)} />
-=======
       {upcoming.length > 0 || quick.length > 0 ? (
         <>
           <SectionHeader title={s('coming_soon')} />
@@ -207,7 +153,6 @@ function HomeContent({ data }: { data: HomeData }) {
       ) : null}
       <EventSheet event={event} onClose={() => setEvent(null)} />
       <SessionSheet session={session} onClose={() => setSession(null)} />
->>>>>>> 421b520 (Initial commit)
       <RateSheet booking={rate?.booking ?? null} initial={rate?.initial ?? 0} visible={!!rate} onClose={() => setRate(null)} />
     </View>
   );
@@ -312,66 +257,6 @@ function NextClassCard({ booking: b }: { booking: Booking }) {
   );
 }
 
-<<<<<<< HEAD
-function PassesRow({ passes }: { passes: UserPass[] }) {
-  const s = useStrings();
-  const c = useTheme();
-  const router = useRouter();
-  if (passes.length === 0) {
-    return (
-      <AppCard>
-        <Txt variant="titleSmall">{s('no_pass_title')}</Txt>
-        <Txt variant="small" style={{ marginTop: Space.s1 }}>{s('no_pass_body')}</Txt>
-        <Button variant="outlined" label={s('see_passes')} onPress={() => router.push('/bons')} style={{ marginTop: Space.s3, alignSelf: 'flex-start' }} />
-      </AppCard>
-    );
-  }
-  return (
-    <HScroll>
-      {passes.map((p) => (
-        <AppCard key={p.id} onPress={() => router.push('/bons')} style={{ width: 232, height: 132, justifyContent: 'space-between' }}>
-          <Txt variant="titleSmall" numberOfLines={1}>{p.name}</Txt>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: Space.s2 }}>
-            <Txt style={{ fontFamily: fonts.displayExtra, fontSize: 40, lineHeight: 48, includeFontPadding: false }} color={c.violeta}>
-              {p.unlimited ? '∞' : String(p.classesRemaining ?? 0)}
-            </Txt>
-            <Txt variant="small" style={{ marginBottom: 4 }}>{p.unlimited ? s('pass_unlimited') : s('classes_left')}</Txt>
-          </View>
-          <Txt variant="small">{p.expiresOn ? s('pass_expires', { date: s.dateMedium(p.expiresOn) }) : s('pass_no_expiry')}</Txt>
-        </AppCard>
-      ))}
-    </HScroll>
-  );
-}
-
-function PromotionsRow({ promotions }: { promotions: Promotion[] }) {
-  const s = useStrings();
-  return (
-    <HScroll>
-      {promotions.map((p) => {
-        const on = readableOn(p.color);
-        return (
-          <View key={p.id} style={{ width: 290, minHeight: 190, padding: Space.s4, borderRadius: Radii.lg, backgroundColor: p.color }}>
-            <Pill label={s(promoTypeKey(p.type))} background={withAlpha(on, 0.18)} foreground={on} />
-            <Txt variant="titleSmall" color={on} numberOfLines={2} style={{ marginTop: Space.s2 }}>{p.title}</Txt>
-            {p.body ? <Txt variant="body" color={on} numberOfLines={3} style={{ marginTop: Space.s1 }}>{p.body}</Txt> : null}
-            <View style={{ flex: 1, minHeight: Space.s2 }} />
-            {p.endsAt ? <Txt variant="small" color={on} style={{ opacity: 0.85 }}>{s('promo_until', { date: s.dateShort(p.endsAt) })}</Txt> : null}
-            {p.ctaUrl && p.ctaLabel ? (
-              <Button
-                label={p.ctaLabel}
-                color={on}
-                onColor={p.color}
-                compact
-                style={{ marginTop: Space.s2 }}
-                onPress={() => void Linking.openURL(p.ctaUrl!).catch(() => {})}
-              />
-            ) : null}
-          </View>
-        );
-      })}
-    </HScroll>
-=======
 export function PromotionCard({ promotion: p, width }: { promotion: Promotion; width?: number }) {
   const s = useStrings();
   const on = readableOn(p.color);
@@ -450,7 +335,6 @@ function QuickClassTile({ session, onOpen, onBook }: { session: ClassSession; on
         <Button compact label={s('quick_book_btn')} onPress={onBook} />
       </View>
     </AppCard>
->>>>>>> 421b520 (Initial commit)
   );
 }
 

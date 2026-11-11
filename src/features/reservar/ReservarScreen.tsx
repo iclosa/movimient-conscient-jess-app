@@ -7,40 +7,26 @@ import { useActivities, useSessions, useSettings } from '@/api/hooks';
 import { ClassSession, isPaymentPending } from '@/api/models';
 import { useStrings, useTheme } from '@/theme';
 import { activityTone, fonts, Radii, Space, withAlpha } from '@/theme/tokens';
-<<<<<<< HEAD
-import { AppCard, Chip, EmptyState, ErrorBox, IconName, Loading, Pill, Txt } from '@/ui';
-import { SessionSheet } from './SessionSheet';
-
-const dayOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-=======
 import { AppCard, Chip, EmptyState, Segmented, ErrorBox, IconName, Loading, Pill, Txt, useTabBarSpace } from '@/ui';
 import { MonthCalendar, dayOf, monthEnd, monthStart } from './MonthCalendar';
 import { SessionSheet } from './SessionSheet';
 
->>>>>>> 421b520 (Initial commit)
 const sameDay = (a: Date, b: Date) => dayOf(a).getTime() === dayOf(b).getTime();
 
 export function ReservarScreen() {
   const s = useStrings();
   const c = useTheme();
   const qc = useQueryClient();
-<<<<<<< HEAD
-=======
   const tabSpace = useTabBarSpace();
->>>>>>> 421b520 (Initial commit)
   const settings = useSettings();
   const openDays = Math.min(31, Math.max(1, settings.data?.bookingOpenDays ?? 14));
   const today = dayOf(new Date());
   const to = new Date(today.getFullYear(), today.getMonth(), today.getDate() + openDays - 1);
-<<<<<<< HEAD
-  const sessions = useSessions(today, to);
-=======
   const [mode, setMode] = useState<'list' | 'calendar'>('list');
   const [month, setMonth] = useState(monthStart(today));
   const listSessions = useSessions(today, to);
   const monthSessions = useSessions(month.getTime() === monthStart(today).getTime() ? today : month, monthEnd(month));
   const sessions = mode === 'calendar' ? monthSessions : listSessions;
->>>>>>> 421b520 (Initial commit)
   const activities = useActivities();
   const [selected, setSelected] = useState(today);
   const [activityId, setActivityId] = useState<number | null>(null);
@@ -53,10 +39,7 @@ export function ReservarScreen() {
     [openDays, today.getTime()],
   );
   const filtered = (sessions.data ?? []).filter((x) => activityId == null || x.activity?.id === activityId);
-<<<<<<< HEAD
-=======
   const calendarSessions = (monthSessions.data ?? []).filter((x) => activityId == null || x.activity?.id === activityId);
->>>>>>> 421b520 (Initial commit)
   const daysWithClasses = new Set(filtered.filter((x) => x.state !== 'cancelled').map((x) => dayOf(x.startsAt).getTime()));
   const selectedSessions = filtered
     .filter((x) => sameDay(x.startsAt, selected))
@@ -68,25 +51,6 @@ export function ReservarScreen() {
     setRefreshing(false);
   };
 
-<<<<<<< HEAD
-  return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: c.surface100 }}>
-      <Txt variant="titleMedium" accessibilityRole="header" style={{ paddingHorizontal: Space.s4, paddingVertical: Space.s3 }}>
-        {s('tab_reservar')}
-      </Txt>
-      <View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: Space.s4, paddingVertical: Space.s2, gap: Space.s2 }}>
-          {days.map((d) => (
-            <DayChip
-              key={d.getTime()}
-              day={d}
-              selected={sameDay(d, selected)}
-              hasClasses={daysWithClasses.has(d.getTime())}
-              onPress={() => setSelected(d)}
-            />
-          ))}
-        </ScrollView>
-=======
   const header = (
       <View>
         {mode === 'list' ? (
@@ -102,7 +66,6 @@ export function ReservarScreen() {
             ))}
           </ScrollView>
         ) : null}
->>>>>>> 421b520 (Initial commit)
         {(activities.data?.length ?? 0) >= 2 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: Space.s4, paddingVertical: Space.s2, gap: Space.s2 }}>
             <Chip label={s('all_activities')} selected={activityId == null} onPress={() => setActivityId(null)} />
@@ -117,8 +80,6 @@ export function ReservarScreen() {
             ))}
           </ScrollView>
         ) : null}
-<<<<<<< HEAD
-=======
         {mode === 'calendar' ? (
           <View style={{ paddingTop: Space.s2 }}>
             <MonthCalendar
@@ -133,28 +94,10 @@ export function ReservarScreen() {
             />
           </View>
         ) : null}
->>>>>>> 421b520 (Initial commit)
         <Txt variant="titleSmall" style={{ paddingHorizontal: Space.s4, paddingTop: Space.s3, paddingBottom: Space.s1 }}>
           {s.dateLong(selected)}
         </Txt>
       </View>
-<<<<<<< HEAD
-
-      {sessions.isPending ? (
-        <Loading />
-      ) : sessions.isError ? (
-        <ErrorBox error={sessions.error} onRetry={() => void sessions.refetch()} />
-      ) : (
-        <FlatList
-          data={selectedSessions}
-          keyExtractor={(x) => String(x.id)}
-          contentContainerStyle={{ paddingHorizontal: Space.s4, paddingTop: Space.s2, paddingBottom: Space.s6, gap: Space.s3, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={c.violeta} />}
-          ListEmptyComponent={
-            <View style={{ marginTop: Space.s5 }}>
-              <EmptyState icon="body-outline" title={s('no_classes_day')} body={s('no_classes_day_body')} />
-            </View>
-=======
   );
 
   return (
@@ -194,7 +137,6 @@ export function ReservarScreen() {
                 <EmptyState icon="body-outline" title={s('no_classes_day')} body={s('no_classes_day_body')} />
               </View>
             )
->>>>>>> 421b520 (Initial commit)
           }
           renderItem={({ item }) => <SessionTile session={item} onPress={() => setOpen(item)} />}
         />

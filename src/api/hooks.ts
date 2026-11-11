@@ -20,8 +20,5 @@ export const useWellness = () => { const { repo } = useSession(); return useQuer
 export const useSun = () => { const { repo } = useSession(); return useQuery({ queryKey: ['sun'], queryFn: () => repo.sunrise(7) }); };
 export const useGratitude = () => { const { repo } = useSession(); return useQuery({ queryKey: ['gratitude'], queryFn: () => repo.gratitude() }); };
 export const useAnnouncements = () => { const { repo } = useSession(); return useQuery({ queryKey: ['announcements'], queryFn: () => repo.announcements() }); };
-<<<<<<< HEAD
-=======
 
 export const usePromotions = () => { const { repo } = useSession(); return useQuery({ queryKey: ['promotions'], queryFn: () => repo.promotions() }); };
->>>>>>> 421b520 (Initial commit)

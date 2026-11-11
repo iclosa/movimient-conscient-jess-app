@@ -9,7 +9,4 @@ export * from './Logo';
 export * from './Decor';
 export * from './SubScreen';
 export * from './DateField';
-<<<<<<< HEAD
-=======
 export * from './GlassTabBar';
->>>>>>> 421b520 (Initial commit)

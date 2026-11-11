@@ -61,8 +61,11 @@ export const parseActivity = (j: J): Activity => ({
 export interface Instructor { id: number; name: string; photoUrl: string | null }
 export const parseInstructor = (j: J): Instructor => ({ id: j.id, name: j.name, photoUrl: str(j.photo_url) });
 
-export interface MyBookingRef { id: number; status: string; paymentMode: string; childId: number | null }
-export const parseBookingRef = (j: J): MyBookingRef => ({ id: j.id, status: j.status, paymentMode: j.payment_mode ?? '', childId: int(j.child_id) });
+export interface MyBookingRef { id: number; status: string; paymentStatus: string; childId: number | null }
+/** Reserva viva (no cancelada ni ya hecha) de esa persona en la clase: `childId` null es la persona titular. */
+export const hasActiveBooking = (s: { myBookings: MyBookingRef[] }, childId: number | null) =>
+  s.myBookings.some((b) => b.childId === childId && b.status !== 'cancelled' && b.status !== 'attended');
+export const parseBookingRef = (j: J): MyBookingRef => ({ id: j.id, status: j.status, paymentStatus: j.payment_status ?? '', childId: int(j.child_id) });
 
 /** state: available | full | booked | waitlist | cancelled */
 export interface ClassSession {
@@ -84,14 +87,14 @@ export const parseAttendee = (j: J): Attendee => ({ type: j.type, childId: int(j
 export const isChildAttendee = (a: Attendee) => a.type === 'child';
 
 export interface Booking {
-  id: number; status: string; statusLabel: string; paymentMode: string; attendee: Attendee; canCancel: boolean;
+  id: number; status: string; statusLabel: string; paymentStatus: string; attendee: Attendee; canCancel: boolean;
   freeCancellationUntil: Date | null; isFreeCancellation: boolean; lateCancellation: boolean;
   canRate: boolean; rating: number | null; ratingComment: string | null; session: ClassSession | null;
 }
 /** Reserva confirmada pero sin cobrar (sin bono): se paga en la clase o con un bono. */
-export const isPaymentPending = (b: { status: string; paymentMode: string }) => b.status === 'booked' && b.paymentMode === 'pending';
+export const isPaymentPending = (b: { status: string; paymentStatus: string }) => b.status === 'booked' && b.paymentStatus === 'pending';
 export const parseBooking = (j: J): Booking => ({
-  id: j.id, status: j.status, statusLabel: j.status_label ?? j.status, paymentMode: j.payment_mode ?? '',
+  id: j.id, status: j.status, statusLabel: j.status_label ?? j.status, paymentStatus: j.payment_status ?? '',
   attendee: parseAttendee(j.attendee ?? {}), canCancel: j.can_cancel === true,
   freeCancellationUntil: dtn(j.free_cancellation_until), isFreeCancellation: j.is_free_cancellation === true,
   lateCancellation: j.late_cancellation === true, canRate: j.can_rate === true, rating: int(j.rating),

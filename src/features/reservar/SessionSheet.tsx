@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMyPasses, useSessions, useSettings } from '@/api/hooks';
 import { ApiError } from '@/api/client';
-import { ClassSession, MyBookingRef, firstName, isPaymentPending } from '@/api/models';
+import { ClassSession, MyBookingRef, firstName, isPaymentPending, hasActiveBooking } from '@/api/models';
 import { useSession } from '@/session';
 import { useStrings, useTheme } from '@/theme';
 import { activityTone, legibleOnSoft, Space, withAlpha } from '@/theme/tokens';
@@ -138,7 +138,7 @@ export function SessionSheet({ session: initial, onClose }: { session: ClassSess
           </View>
         ) : null}
 
-        {canBook ? (
+        {canBook && !hasActiveBooking(session, childId) ? (
           <View>
             {activity?.isFamily ? (
               <View style={{ marginTop: Space.s4 }}>

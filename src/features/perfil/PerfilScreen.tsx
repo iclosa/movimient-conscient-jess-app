@@ -3,11 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
-import { useStreak } from '@/api/hooks';
-=======
 import { useAnnouncements, useBookings, useMyPasses, usePromotions, useStreak } from '@/api/hooks';
->>>>>>> 421b520 (Initial commit)
 import { useSession } from '@/session';
 import { usePrefs, useStrings, useTheme } from '@/theme';
 import { fonts, Space } from '@/theme/tokens';
@@ -29,13 +25,10 @@ export function PerfilScreen() {
   const { user, repo, setUser, refreshUser, signOut } = useSession();
   const { locale, setLocale, themeMode, setThemeMode } = usePrefs();
   const streak = useStreak();
-<<<<<<< HEAD
-=======
   const upcomingBookings = useBookings('upcoming').data?.length ?? 0;
   const activePasses = useMyPasses().data?.filter((p) => p.usable).length ?? 0;
   const notices = useAnnouncements().data?.length ?? 0;
   const promos = usePromotions().data?.length ?? 0;
->>>>>>> 421b520 (Initial commit)
   const { confirm } = useFeedback();
   const [refreshing, setRefreshing] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
@@ -84,20 +77,12 @@ export function PerfilScreen() {
       ) : null}
 
       <View style={{ marginTop: Space.s4, gap: Space.s2 }}>
-<<<<<<< HEAD
-        <MenuTile icon="calendar-outline" label={s('my_bookings')} onPress={() => router.push('/reserves')} />
-        <MenuTile icon="ticket-outline" label={s('passes_title')} onPress={() => router.push('/bons')} />
-        <MenuTile icon="people-outline" label={s('children_title')} onPress={() => router.push('/fills')} />
-        <MenuTile icon="person-outline" label={s('personal_data')} onPress={() => router.push('/dades')} />
-        <MenuTile icon="notifications-outline" label={s('announcements_title')} onPress={() => router.push('/avisos')} />
-=======
         <MenuTile icon="calendar-outline" label={s('my_bookings')} badge={upcomingBookings} onPress={() => router.push('/reserves')} />
         <MenuTile icon="ticket-outline" label={s('passes_title')} badge={activePasses} onPress={() => router.push('/bons')} />
         <MenuTile icon="pricetag-outline" label={s('promotions')} badge={promos} onPress={() => router.push('/promocions')} />
         <MenuTile icon="people-outline" label={s('children_title')} onPress={() => router.push('/fills')} />
         <MenuTile icon="person-outline" label={s('personal_data')} onPress={() => router.push('/dades')} />
         <MenuTile icon="notifications-outline" label={s('announcements_title')} badge={notices} onPress={() => router.push('/avisos')} />
->>>>>>> 421b520 (Initial commit)
         <MenuTile icon="information-circle-outline" label={s('about_center')} onPress={() => router.push('/centre')} />
       </View>
 
@@ -155,19 +140,13 @@ function Stat({ value, label, flame }: { value: string; label: string; flame?: b
   );
 }
 
-<<<<<<< HEAD
-export function MenuTile({ icon, label, onPress, danger }: { icon: IconName; label: string; onPress: () => void; danger?: boolean }) {
-=======
 export function MenuTile({ icon, label, onPress, danger, badge }: { icon: IconName; label: string; onPress: () => void; danger?: boolean; badge?: number }) {
->>>>>>> 421b520 (Initial commit)
   const c = useTheme();
   return (
     <AppCard onPress={onPress} padding={0} accessibilityLabel={label}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: Space.s4, paddingVertical: Space.s3, minHeight: 56, gap: Space.s3 }}>
         <Ionicons name={icon} size={24} color={danger ? c.error : c.violeta} />
         <Txt variant="titleSmall" color={danger ? c.error : c.ink} style={{ flex: 1 }}>{label}</Txt>
-<<<<<<< HEAD
-=======
         {badge != null && badge > 0 ? (
           <View
             accessibilityLabel={String(badge)}
@@ -176,7 +155,6 @@ export function MenuTile({ icon, label, onPress, danger, badge }: { icon: IconNa
             <Txt color={c.onVioleta} style={{ fontFamily: fonts.sansBold, fontSize: 13, lineHeight: 17, includeFontPadding: false }}>{badge > 99 ? '99+' : String(badge)}</Txt>
           </View>
         ) : null}
->>>>>>> 421b520 (Initial commit)
         {!danger ? <Ionicons name="chevron-forward" size={22} color={c.inkMuted} /> : null}
       </View>
     </AppCard>

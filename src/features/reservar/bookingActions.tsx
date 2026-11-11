@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-<<<<<<< HEAD
-import { Booking } from '@/api/models';
-=======
 import { Booking, ClassSession, isPaymentPending } from '@/api/models';
->>>>>>> 421b520 (Initial commit)
 import { useSession } from '@/session';
 import { useStrings } from '@/theme';
 import { Space } from '@/theme/tokens';
@@ -106,8 +102,6 @@ export function RateSheet({
     </Sheet>
   );
 }
-<<<<<<< HEAD
-=======
 
 /** Reserva rápida desde una tarjeta (sin hoja): pide confirmación, reserva y avisa. */
 export function useQuickBook() {
@@ -135,4 +129,3 @@ export function useQuickBook() {
     }
   };
 }
->>>>>>> 421b520 (Initial commit)
