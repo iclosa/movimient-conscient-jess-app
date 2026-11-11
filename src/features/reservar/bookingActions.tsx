@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
+<<<<<<< HEAD
 import { Booking } from '@/api/models';
+=======
+import { Booking, ClassSession, isPaymentPending } from '@/api/models';
+>>>>>>> 421b520 (Initial commit)
 import { useSession } from '@/session';
 import { useStrings } from '@/theme';
 import { Space } from '@/theme/tokens';
@@ -102,3 +106,33 @@ export function RateSheet({
     </Sheet>
   );
 }
+<<<<<<< HEAD
+=======
+
+/** Reserva rápida desde una tarjeta (sin hoja): pide confirmación, reserva y avisa. */
+export function useQuickBook() {
+  const s = useStrings();
+  const { repo } = useSession();
+  const { confirm, toast } = useFeedback();
+  const invalidate = useInvalidateBookingData();
+
+  return async (session: ClassSession): Promise<boolean> => {
+    const ok = await confirm({
+      title: s('book_confirm_title', { title: session.title }),
+      body: `${s.dateLong(session.startsAt)} · ${s.timeRange(session.startsAt, session.endsAt)}`,
+      confirmLabel: s('book_confirm_yes'),
+      cancelLabel: s('book_confirm_back'),
+    });
+    if (!ok) return false;
+    try {
+      const booking = await repo.book(session.id, null);
+      invalidate();
+      toast(s(booking.status === 'waitlist' ? 'booked_waitlist' : isPaymentPending(booking) ? 'booked_pending' : 'booked_ok'));
+      return true;
+    } catch (e) {
+      toast(errorText(e, s));
+      return false;
+    }
+  };
+}
+>>>>>>> 421b520 (Initial commit)

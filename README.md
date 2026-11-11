@@ -8,7 +8,11 @@ Resumen · Reservar · Vídeos · Perfil · Més (mindfulness, salida del sol, r
 ## Arrancar
 ```bash
 npm install
+<<<<<<< HEAD
 cp .env.example .env     # EXPO_PUBLIC_API_BASE_URL=https://moviment-conscient-backend.ddev.site
+=======
+cp .env.example .env     # EXPO_PUBLIC_API_BASE_URL=https://moviment-conscient-backend-y2g5.onrender.com/api/v1
+>>>>>>> 421b520 (Initial commit)
 npx expo start
 ```
 - **Móvil real:** instala Expo Go y escanea el QR (no hace falta Xcode ni Android Studio).

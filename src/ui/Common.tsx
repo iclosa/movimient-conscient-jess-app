@@ -9,6 +9,10 @@ import { ApiError } from '@/api/client';
 import { useStrings, useTheme } from '@/theme';
 import { Radii, Space, cardShadow, withAlpha } from '@/theme/tokens';
 import { Button } from './Button';
+<<<<<<< HEAD
+=======
+import { useTabBarSpace } from './GlassTabBar';
+>>>>>>> 421b520 (Initial commit)
 import { Txt } from './Text';
 import { errorText } from './Feedback';
 
@@ -29,11 +33,19 @@ export function Screen({
   scroll?: boolean;
 }) {
   const c = useTheme();
+<<<<<<< HEAD
+=======
+  const tabSpace = useTabBarSpace();
+>>>>>>> 421b520 (Initial commit)
   return (
     <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: c.surface100 }}>
       {scroll ? (
         <ScrollView
+<<<<<<< HEAD
           contentContainerStyle={[pagePadding, contentStyle]}
+=======
+          contentContainerStyle={[pagePadding, { paddingBottom: Space.s6 + tabSpace }, contentStyle]}
+>>>>>>> 421b520 (Initial commit)
           keyboardShouldPersistTaps="handled"
           refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={c.violeta} /> : undefined}
         >

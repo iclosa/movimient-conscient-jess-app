@@ -63,6 +63,10 @@ const es: Record<string, string> = {
   pass_unlimited: "Ilimitado",
   pass_no_expiry: "Sin fecha de caducidad",
   pass_expires: "Caduca el {date}",
+<<<<<<< HEAD
+=======
+  promotions_empty: "Ahora mismo no hay promociones.",
+>>>>>>> 421b520 (Initial commit)
   promotions: "Promociones",
   promo_type_promo: "Promoción",
   promo_type_taller: "Taller",
@@ -108,6 +112,15 @@ const es: Record<string, string> = {
   booked_waitlist: "Estás en la lista de espera.",
   pass_required_title: "Necesitas un bono",
   booking_cancelled: "Reserva cancelada.",
+<<<<<<< HEAD
+=======
+  view_list: "Lista",
+  view_calendar: "Calendario",
+  month_prev: "Mes anterior",
+  month_next: "Mes siguiente",
+  quick_book_title: "Reserva rápida",
+  quick_book_btn: "Reservar",
+>>>>>>> 421b520 (Initial commit)
   book_confirm_title: "¿Quieres reservar {title}?",
   book_confirm_yes: "Reservar la clase",
   book_confirm_back: "Volver",
